@@ -37,3 +37,7 @@ yarpros_add_type(SetPenOut)
 add_executable(yarpros_turtlesim main.cpp ${YARPROS_SOURCES})
 
 target_link_libraries(yarpros_turtlesim YARP_OS YARP_init)
+
+
+add_executable(pose2bottle pose2bottle.cpp ${YARPROS_SOURCES})
+target_link_libraries(pose2bottle YARP_OS YARP_init)
