@@ -34,8 +34,7 @@ yarpros_add_type(SetPenIn)
 yarpros_add_type(SetPenOut)
 
 
-add_executable(yarpros_turtlesim main.cpp ${YARPROS_SOURCES})
-
+add_executable(yarpros_turtlesim main.cpp TurtleSim.cpp ${YARPROS_SOURCES})
 target_link_libraries(yarpros_turtlesim YARP_OS YARP_init)
 
 

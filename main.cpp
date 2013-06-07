@@ -2,40 +2,33 @@
 #include <iostream>
 #include <cmath>
 
+#include "TurtleSim.h"
+
 #include "Velocity.h"
 #include "Pose.h"
-#include "TeleportAbsoluteIn.h"
-#include "TeleportAbsoluteOut.h"
-#include "TeleportRelativeIn.h"
-#include "TeleportRelativeOut.h"
-#include "EmptyIn.h"
-#include "EmptyOut.h"
-#include "SpawnIn.h"
-#include "SpawnOut.h"
-#include "KillIn.h"
-#include "KillOut.h"
-#include "SetPenIn.h"
-#include "SetPenOut.h"
+
 
 
 int main(int argc, char *argv[]) {
     yarp::os::Network yarp;
 
+    TurtleSim::reset();
 
+    TurtleSim turtleSim1("turtle1");
 
-    // reset service
-    const std::string reset_port_name("/yarpros_turtlesim/reset");
-    const std::string reset_service("/turtlesim#/reset");
+#if 0
+    turtleSim1.teleportAbsolute(5.0, 5.0, 0.0);
 
-    yarp::os::Port reset_port;
-    reset_port.openFake(reset_port_name.c_str());
-    reset_port.addOutput(reset_service.c_str());
+    yarp::os::Time::delay(1);
 
-    EmptyIn resetIn;
-    EmptyOut resetOut;
-    reset_port.write(resetIn, resetOut);
+    turtleSim1.teleportRelative(-1, -M_PI/2);
 
+    yarp::os::Time::delay(1);
 
+    TurtleSim::clear();
+    std::string turtle = TurtleSim::spawn(3.0, 3.0, M_PI*5.0/6.0);
+    TurtleSim::kill(turtle);
+#endif // 0
 
     // command_velocity topic
     const std::string command_velocity_port_name("/yarpros_turtlesim/turtle1/command_velocity");
@@ -48,6 +41,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+#if 0
     Velocity v;
     v.linear = 2.0;
     v.angular = 0;
@@ -56,143 +50,115 @@ int main(int argc, char *argv[]) {
 
 
 
-    // pose topic
-    const std::string pose_port_name("/yarpros_turtlesim/turtle1/pose");
-    const std::string pose_topic("topic://turtle1/pose");
-    yarp::os::BufferedPort<Pose> pose_port;
-    pose_port.open(pose_port_name.c_str());
-
-    if (!yarp.connect(pose_topic.c_str(), pose_port_name.c_str())) {
-        std::cout << "Error! Could not connect to topic " << pose_topic << std::endl;
-        return -1;
-    }
-
-
-
-
-    // teleport_absolute service
-    const std::string teleport_absolute_port_name("/yarpros_turtlesim/turtle1/teleport_absolute");
-    const std::string teleport_absolute_service("/turtlesim#/turtle1/teleport_absolute");
-    yarp::os::Port teleport_absolute_port;
-    teleport_absolute_port.openFake(teleport_absolute_port_name.c_str());
-    teleport_absolute_port.addOutput(teleport_absolute_service.c_str());
-
-    TeleportAbsoluteIn teleportAbsoluteIn;
-    teleportAbsoluteIn.x = 5;
-    teleportAbsoluteIn.y = 5;
-    teleportAbsoluteIn.theta = 0;
-    TeleportAbsoluteOut teleportAbsoluteOut;
-    teleport_absolute_port.write(teleportAbsoluteIn, teleportAbsoluteOut);
-
-
-
-
-    // teleport_relative service
-    const std::string teleport_relative_port_name("/yarpros_turtlesim/turtle1/teleport_relative");
-    const std::string teleport_relative_service("/turtlesim#/turtle1/teleport_relative");
-    yarp::os::Port teleport_relative_port;
-    teleport_relative_port.openFake(teleport_relative_port_name.c_str());
-    teleport_relative_port.addOutput(teleport_relative_service.c_str());
-
-    TeleportRelativeIn teleportRelativeIn;
-    teleportRelativeIn.linear = -1;
-    teleportRelativeIn.angular = -M_PI/2;
-    TeleportRelativeOut teleportRelativeOut;
-    teleport_relative_port.write(teleportRelativeIn, teleportRelativeOut);
-
-
-
-
-    // clear service
-    const std::string clear_port_name("/yarpros_turtlesim/clear");
-    const std::string clear_service("/turtlesim#/clear");
-
-    yarp::os::Port clear_port;
-    clear_port.openFake(clear_port_name.c_str());
-    clear_port.addOutput(clear_service.c_str());
-
-    EmptyIn clearIn;
-    EmptyOut clearOut;
-    clear_port.write(clearIn, clearOut);
-
-
-
-
-
-
-
-    // spawn service
-    const std::string spawn_port_name("/yarpros_turtlesim/spawn");
-    const std::string spawn_service("/turtlesim#/spawn");
-    yarp::os::Port spawn_port;
-    spawn_port.openFake(clear_port_name.c_str());
-    spawn_port.addOutput(spawn_service.c_str());
-
-    SpawnIn spawnIn;
-    SpawnOut spawnOut;
-    spawnIn.x = 3.0;
-    spawnIn.y = 3.0;
-    spawnIn.theta = M_PI;
-    spawn_port.write(spawnIn, spawnOut);
-
-    std::cout << "New turtle name = " << spawnOut.name << std::endl;
-
-
-
-
-    // kill service
-    const std::string kill_port_name("/yarpros_turtlesim/kill");
-    const std::string kill_service("/turtlesim#/kill");
-    yarp::os::Port kill_port;
-    kill_port.openFake(clear_port_name.c_str());
-    kill_port.addOutput(kill_service.c_str());
-
-    KillIn killIn;
-    KillOut killOut;
-    killIn.name = spawnOut.name;
-    kill_port.write(killIn, killOut);
-
-    std::cout << "Killed turtle " << killIn.name << std::endl;
-
-
     // set_pen service
-    const std::string set_pen_port_name("/yarpros_turtlesim/turtle1/set_pen");
-    const std::string set_pen_service("/turtlesim#/turtle1/set_pen");
-    yarp::os::Port set_pen_port;
-    set_pen_port.openFake(set_pen_port_name.c_str());
-    set_pen_port.addOutput(set_pen_service.c_str());
-
-//     if (!yarp.connect(set_pen_service_local_port_name.c_str(), set_pen_service_remote_port_name.c_str())) {
-//         std::cout << "Error! Could not connect to service " << set_pen_service_remote_port_name << std::endl;
-//         return -1;
-//     }
-
-    SetPenIn setPenIn;
-    setPenIn.r = 0;
-    setPenIn.g = 255;
-    setPenIn.b = 0;
-    setPenIn.width = 1;
-    setPenIn.off = 0;
-    SetPenOut setPenOut;
-    set_pen_port.write(setPenIn, setPenOut);
+    turtleSim1.setPen(0, 255, 0, 1, 0);
 
 
 
+    yarp::os::BufferedPort<yarp::os::Bottle> out_pose_port;
+    out_pose_port.open("/yarpros_turtlesim/debug");
+
+
+// Now try to write YARP
+
+//     // reset
+//     TurtleSim::reset();
+//     // kill turtle1
+//     TurtleSim::kill("turtle1");
+//     // re-spawn turtle1
+//     std::string turtle1 = TurtleSim::spawn(3.0, 3.0, 2.0 * M_PI * 5.0 / 6.0, "turtle1");
+// 
+//     std::cout << "New turtle name = " << turtle1 << std::endl;
+
+//     // move
+//     v.linear = 4.0;
+//     v.angular = 0;
+//     command_velocity_port.write(v);
+//     yarp::os::Time::delay(1);
+
+#endif // 0
 
     while (1) {
-        Velocity v;
-        v.linear = 4.0;
-        v.angular = 0.5;
 
-        command_velocity_port.write(v);
+//         if (!turtleSim1.teleportAbsolute(3.0, 3.0, M_PI / 2.0))
+//             std::cerr << "Cannot teleport!" << std::endl;
+        yarp::os::Time::delay(0.2);
+        if (!TurtleSim::clear())
+            std::cerr << "Cannot clear!" << std::endl;
+        if (!turtleSim1.setPen(0, 255, 0, 1, 0))
+            std::cerr << "Cannot set pen!" << std::endl;
 
+        float i = 0;
+        while (1) {
+            Velocity v;
+            v.linear = 2.0;
+            v.angular = 1 + cos(i);
+            command_velocity_port.write(v);
+            i += M_PI/32;
+            yarp::os::Time::delay(1.0/32);
+        }
+
+
+        // Draw a flower
+        for (int i=0; i<15; i++) {
+            Velocity v;
+            v.linear = 4.0;
+            v.angular = 0.5;
+            command_velocity_port.write(v);
+
+            yarp::os::Time::delay(1);
+
+            v.linear = 1.5;
+            v.angular = 3.0;
+            command_velocity_port.write(v);
+
+            yarp::os::Time::delay(1);
+        }
+
+        turtleSim1.teleportAbsolute(6.0, 6.0, M_PI);
+        yarp::os::Time::delay(0.2);
+        TurtleSim::clear();
+        turtleSim1.setPen(255, 0, 0, 1, 0);
         yarp::os::Time::delay(1);
 
-        v.linear = 1.5;
-        v.angular = 3.0;
-        command_velocity_port.write(v);
+        // Draw a flower
+        for (int i=0; i<1; i++) {
+            Velocity v;
+            v.linear = 3.5;
+            v.angular = 0.8;
+            command_velocity_port.write(v);
 
+            yarp::os::Time::delay(1);
+
+            v.linear = 1.7;
+            v.angular = 2.5;
+            command_velocity_port.write(v);
+
+            yarp::os::Time::delay(1);
+        }
+
+        turtleSim1.teleportAbsolute(8.0, 5.0, 0);
+        yarp::os::Time::delay(0.2);
+        TurtleSim::clear();
+        turtleSim1.setPen(0, 0, 255, 1, 0);
         yarp::os::Time::delay(1);
+
+        // Draw a flower
+        for (int i=0; i<15; i++) {
+            Velocity v;
+            v.linear = 2.5;
+            v.angular = 1.5;
+            command_velocity_port.write(v);
+
+            yarp::os::Time::delay(1);
+
+            v.linear = 1.5;
+            v.angular = 4.5;
+            command_velocity_port.write(v);
+
+            yarp::os::Time::delay(1);
+        }
+#if 0
         Pose *p = pose_port.read();
         if(p != NULL) {
 //             if(p.linear_velocity == 0 && p.angular_velocity == 0) {
@@ -203,10 +169,20 @@ int main(int argc, char *argv[]) {
                       << ", angular_velocity = " << p->angular_velocity
                       << std::endl;
 //             }
+            yarp::os::Bottle &b = out_pose_port.prepare();
+            b.clear();
+            b.addDouble(p->x);
+            b.addDouble(p->y);
+            b.addDouble(p->theta);
+            b.addDouble(p->linear_velocity);
+            b.addDouble(p->angular_velocity);
+            out_pose_port.write();
+
         } else {
             std::cerr << "Couldn't read pose" << std::endl;
         }
-
+#endif // 0
     }
+
     return 0;
 }
